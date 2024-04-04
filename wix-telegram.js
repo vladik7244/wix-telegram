@@ -26,15 +26,23 @@ function processMessage(msg) {
 function processReadRequest(msg) {
   const result = path(Telegram.WebApp, msg.path);
   const resultStr = JSON.stringify(result);
-  localStorage.setItem(msg.address, resultStr);
+  writeToStorage(msg.address, resultStr);
 }
 
 function processAction(msg) {
   const method = path(Telegram.WebApp, msg.path);
   const result = method(...msg.args);
   if (msg.resultAddress) {
-    localStorage.setItem(msg.resultAddress, JSON.stringify(result));
+    writeToStorage(msg.resultAddress, JSON.stringify(result));
   }
+}
+
+function writeToStorage(key, value) {
+  const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
+  const data = localStorage.getItem(appKey) ?? '{}';
+  const parsedData = JSON.parse(data);
+  parsedData[key] = value;
+  localStorage.setItem(appKey, JSON.stringify(parsedData));
 }
 
 function tryParseMsg(data) {
