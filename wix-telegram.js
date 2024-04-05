@@ -27,9 +27,19 @@ function processReadRequest(msg) {
   });
 }
 
+function isCallback(arg) {
+  if (!arg) {
+    return false;
+  }
+  if (typeof arg !== 'object') {
+    return false
+  }
+  return arg.type === 'callback' && Boolean(arg.callbackId);
+}
+
 function processArgs(args = []) {
   return args.map((arg) => {
-    if (typeof arg === 'object' && 'type' in arg && arg.type === 'callback' && arg.callbackId) {
+    if (isCallback(arg)) {
       return (...args) => {
         sendToWix({
           type: '@com',
