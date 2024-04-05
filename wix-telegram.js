@@ -37,8 +37,17 @@ function processAction(msg) {
   }
 }
 
+let iframe;
+function findIframeIfNeeded() {
+  if (iframe) {
+    return
+  }
+  iframe = document.querySelectorAll('iframe')[0];
+}
+
 function writeToStorage(key, value) {
-  postMessage({
+  findIframeIfNeeded();
+  iframe.postMessage({
     key, value,
   }, '*');
   // const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
