@@ -29,7 +29,7 @@ function processReadRequest(msg) {
 
 function processArgs(args = []) {
   return args.map((arg) => {
-    if (typeof arg === 'object' && arg.type === 'callback' && arg.callbackId) {
+    if (typeof arg === 'object' && 'type' in arg && arg.type === 'callback' && arg.callbackId) {
       return (...args) => {
         sendToWix({
           type: '@com',
@@ -46,12 +46,14 @@ function processArgs(args = []) {
 function processAction(msg) {
   const method = path(Telegram, msg.path);
   const result = method(...processArgs(msg.args));
-  sendToWix({
-    type: '@com',
-    action: 'response',
-    requestId: msg.requestId,
-    result,
-  });
+  if (msg.requestId) {
+    sendToWix({
+      type: '@com',
+      action: 'response',
+      requestId: msg.requestId,
+      result,
+    });
+  }
 }
 
 let iframe;
