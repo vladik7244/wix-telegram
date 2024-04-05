@@ -1,12 +1,6 @@
 window.addEventListener('message', (event) => {
   console.log('EVENT', event);
-  
-  if (event.data === 'openButton') {
-    Telegram.WebApp.MainButton.show();
-  }
-  if (event.data === 'hideButton') {
-    Telegram.WebApp.MainButton.hide()
-  }
+
   const msg = tryParseMsg(event.data);
   if (!msg) {
     return;
@@ -25,16 +19,20 @@ function processMessage(msg) {
 
 function processReadRequest(msg) {
   const result = path(Telegram.WebApp, msg.path);
-  const resultStr = JSON.stringify(result);
-  writeToStorage(msg.address, resultStr);
+  sendToWix({
+    result,
+    requestId: msg.requestId,
+  });
 }
 
 function processAction(msg) {
   const method = path(Telegram.WebApp, msg.path);
   const result = method(...msg.args);
-  if (msg.resultAddress) {
-    writeToStorage(msg.resultAddress, JSON.stringify(result));
-  }
+  sendToWix({
+    
+    result,
+    requestId: msg.requestId,
+  });
 }
 
 let iframe;
@@ -45,18 +43,12 @@ function findIframeIfNeeded() {
   iframe = document.querySelectorAll('iframe')[0];
 }
 
-function writeToStorage(key, value) {
+function sendToWix(message) {
   findIframeIfNeeded();
   iframe.contentWindow.postMessage({
     proxy: true,
-    key,
-    value,
+    message,
   }, '*');
-  // const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
-  // const data = localStorage.getItem(appKey) ?? '{}';
-  // const parsedData = JSON.parse(data);
-  // parsedData[key] = value;
-  // localStorage.setItem(appKey, JSON.stringify(parsedData));
 }
 
 function tryParseMsg(data) {
