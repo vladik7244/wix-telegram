@@ -18,7 +18,7 @@ function processMessage(msg) {
 }
 
 function processReadRequest(msg) {
-  const result = path(Telegram.WebApp, msg.path);
+  const result = path(Telegram, msg.path);
   sendToWix({
     type: '@com',
     action: 'response',
@@ -28,7 +28,7 @@ function processReadRequest(msg) {
 }
 
 function processAction(msg) {
-  const method = path(Telegram.WebApp, msg.path);
+  const method = path(Telegram, msg.path);
   const result = method(...msg.args);
   sendToWix({
     type: '@com',
