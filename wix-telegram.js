@@ -48,7 +48,9 @@ function findIframeIfNeeded() {
 function writeToStorage(key, value) {
   findIframeIfNeeded();
   iframe.postMessage({
-    key, value,
+    proxy: true,
+    key,
+    value,
   }, '*');
   // const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
   // const data = localStorage.getItem(appKey) ?? '{}';
