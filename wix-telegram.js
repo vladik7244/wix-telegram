@@ -46,14 +46,12 @@ function processArgs(args = []) {
 function processAction(msg) {
   const method = path(Telegram, msg.path);
   const result = method(...processArgs(msg.args));
-  if (msg.requestId) {
-    sendToWix({
-      type: '@com',
-      action: 'response',
-      requestId: msg.requestId,
-      result,
-    });
-  }
+  sendToWix({
+    type: '@com',
+    action: 'response',
+    requestId: msg.requestId,
+    result: msg.withResult ? result : undefined,
+  });
 }
 
 let iframe;
