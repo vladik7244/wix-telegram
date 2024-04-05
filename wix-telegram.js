@@ -27,9 +27,25 @@ function processReadRequest(msg) {
   });
 }
 
+function processArgs(args = []) {
+  return args.map((arg) => {
+    if (typeof arg === 'object' && arg.type === 'callback' && arg.callbackId) {
+      return (...args) => {
+        sendToWix({
+          type: '@com',
+          action: 'callback',
+          callbackId: arg.callbackId,
+          args,
+        });
+      };
+    }
+    return arg;
+  });
+}
+
 function processAction(msg) {
   const method = path(Telegram, msg.path);
-  const result = method(...msg.args);
+  const result = method(...processArgs(msg.args));
   sendToWix({
     type: '@com',
     action: 'response',
