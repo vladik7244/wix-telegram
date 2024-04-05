@@ -47,7 +47,7 @@ function findIframeIfNeeded() {
 
 function writeToStorage(key, value) {
   findIframeIfNeeded();
-  iframe.postMessage({
+  iframe.contentWindow.postMessage({
     proxy: true,
     key,
     value,
