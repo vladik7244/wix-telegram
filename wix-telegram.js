@@ -38,11 +38,14 @@ function processAction(msg) {
 }
 
 function writeToStorage(key, value) {
-  const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
-  const data = localStorage.getItem(appKey) ?? '{}';
-  const parsedData = JSON.parse(data);
-  parsedData[key] = value;
-  localStorage.setItem(appKey, JSON.stringify(parsedData));
+  postMessage({
+    key, value,
+  });
+  // const appKey = 'platform_app_675bbcef-18d8-41f5-800e-131ec9e08762_f84fae55-bb4b-4880-a1e0-eb02bc41fa27';
+  // const data = localStorage.getItem(appKey) ?? '{}';
+  // const parsedData = JSON.parse(data);
+  // parsedData[key] = value;
+  // localStorage.setItem(appKey, JSON.stringify(parsedData));
 }
 
 function tryParseMsg(data) {
