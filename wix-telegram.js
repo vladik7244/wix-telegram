@@ -34,7 +34,7 @@ function isCallback(arg) {
   if (typeof arg !== 'object') {
     return false
   }
-  return arg.type === 'callback' && Boolean(arg.callbackId);
+  return arg.type === '@callback' && Boolean(arg.callbackId);
 }
 
 function processArgs(args = []) {
