@@ -64,16 +64,12 @@ function processAction(msg) {
   });
 }
 
-let iframe;
 function findIframeIfNeeded() {
-  if (iframe) {
-    return
-  }
-  iframe = document.querySelectorAll('iframe')[0];
+  return document.querySelector('iframe');
 }
 
 function sendToWix(message) {
-  findIframeIfNeeded();
+  const iframe = findIframeIfNeeded();
   iframe.contentWindow.postMessage({
     proxy: true,
     message,
