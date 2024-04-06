@@ -1,6 +1,4 @@
 window.addEventListener('message', (event) => {
-  console.log('EVENT', event);
-
   const msg = tryParseMsg(event.data);
   if (!msg) {
     return;
@@ -8,7 +6,24 @@ window.addEventListener('message', (event) => {
   processMessage(msg);
 });
 
+const callbacks = new Map();
+
+function getOrCreateCallback(callbackId) {
+  if (!callbacks.has(callbackId)) {
+    callbacks.set(callbackId, (...args) => {
+      sendToWix({
+        type: '@com',
+        action: 'callback',
+        callbackId: callbackId,
+        args,
+      });
+    })
+  }
+  return callbacks.get(callbackId);
+}
+
 function processMessage(msg) {
+  console.log('>> processing message', msg)
   if (msg.action === 'read') {
     return processReadRequest(msg)
   }
@@ -27,7 +42,7 @@ function processReadRequest(msg) {
   });
 }
 
-function isCallback(arg) {
+function isCallbackArg(arg) {
   if (!arg) {
     return false;
   }
@@ -39,15 +54,8 @@ function isCallback(arg) {
 
 function processArgs(args = []) {
   return args.map((arg) => {
-    if (isCallback(arg)) {
-      return (...args) => {
-        sendToWix({
-          type: '@com',
-          action: 'callback',
-          callbackId: arg.callbackId,
-          args,
-        });
-      };
+    if (isCallbackArg(arg)) {
+      return getOrCreateCallback(arg.callbackId);
     }
     return arg;
   });
@@ -70,6 +78,7 @@ function findIframeIfNeeded() {
 
 function sendToWix(message) {
   const iframe = findIframeIfNeeded();
+  console.log('>> sending to velo', message)
   iframe.contentWindow.postMessage({
     proxy: true,
     message,
