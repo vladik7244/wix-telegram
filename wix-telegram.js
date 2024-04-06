@@ -6,21 +6,47 @@ window.addEventListener('message', (event) => {
   processMessage(msg);
 });
 
-const callbacks = new Map();
-
-function getOrCreateCallback(callbackId) {
-  if (!callbacks.has(callbackId)) {
-    callbacks.set(callbackId, (...args) => {
+function makeWeakCallbacksCache() {
+  const callbacks = new Map();
+  const cleanup = new FinalizationRegistry(key => {
+    // See note below on concurrency considerations.
+    const ref = callbacks.get(key);
+    if (ref && !ref.deref()) {
+      callbacks.delete(key);
       sendToWix({
         type: '@com',
-        action: 'callback',
-        callbackId: callbackId,
-        args,
+        action: 'removeCallback', // notify that callback can be garbage collected
+        callbackId: key,
       });
-    })
+    }
+  });
+
+  return {
+    getCallback: (callbackId) => {
+      const ref = callbacks.get(callbackId);
+      if (ref) {
+        const cached = ref.deref();
+        // See note below on concurrency considerations.
+        if (cached !== undefined) return cached;
+      }
+      
+      const fresh = (...args) => {
+        sendToWix({
+          type: '@com',
+          action: 'callback',
+          callbackId: callbackId,
+          args,
+        });
+      };
+
+      callbacks.set(callbackId, new WeakRef(fresh));
+      cleanup.register(fresh, callbackId);
+      return fresh;
+    }
   }
-  return callbacks.get(callbackId);
 }
+
+const callbacksCache = makeWeakCallbacksCache();
 
 function processMessage(msg) {
   console.log('>> processing message', msg)
@@ -55,7 +81,7 @@ function isCallbackArg(arg) {
 function processArgs(args = []) {
   return args.map((arg) => {
     if (isCallbackArg(arg)) {
-      return getOrCreateCallback(arg.callbackId);
+      return callbacksCache.getCallback(arg.callbackId);
     }
     return arg;
   });
